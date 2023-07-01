@@ -6,13 +6,8 @@ import {
 import {
   GatherArguments,
   OnCompleteDoneArguments,
-  OnInitArguments,
 } from "https://deno.land/x/ddc_vim@v3.7.2/base/source.ts";
-import {
-  autocmd,
-  Denops,
-  fn,
-} from "https://deno.land/x/ddc_vim@v3.7.2/deps.ts";
+import { Denops, fn } from "https://deno.land/x/ddc_vim@v3.7.2/deps.ts";
 
 type UserData = {
   vsnip: {
@@ -23,17 +18,6 @@ type UserData = {
 type Params = Record<string, never>;
 
 export class Source extends BaseSource<Params> {
-  async onInit({
-    denops,
-  }: OnInitArguments<Params>): Promise<void> {
-    await autocmd.remove(denops, ["CompleteDone", "CompleteDonePre"], "*", {
-      group: "vsnip_integ",
-    });
-    await autocmd.remove(denops, "User", "vsnip#expand", {
-      group: "vsnip_integ",
-    });
-  }
-
   async gather({
     denops,
   }: GatherArguments<Params>): Promise<DdcGatherItems<UserData>> {
