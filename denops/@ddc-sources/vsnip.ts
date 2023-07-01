@@ -15,11 +15,14 @@ type UserData = {
   };
 };
 
-type Params = Record<string, never>;
+type Params = {
+  menu: boolean;
+};
 
 export class Source extends BaseSource<Params> {
   async gather({
     denops,
+    sourceParams,
   }: GatherArguments<Params>): Promise<DdcGatherItems<UserData>> {
     const items = await denops.call(
       "vsnip#get_complete_items",
@@ -27,6 +30,7 @@ export class Source extends BaseSource<Params> {
     ) as Item<string>[];
     return items.map((item) => ({
       ...item,
+      menu: sourceParams.menu ? item.menu : "",
       user_data: JSON.parse(item.user_data!),
     }));
   }
@@ -45,7 +49,9 @@ export class Source extends BaseSource<Params> {
   }
 
   params(): Params {
-    return {};
+    return {
+      menu: true,
+    };
   }
 }
 
