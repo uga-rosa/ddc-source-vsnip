@@ -7,7 +7,7 @@ import {
   GatherArguments,
   OnCompleteDoneArguments,
 } from "https://deno.land/x/ddc_vim@v3.7.2/base/source.ts";
-import { Denops, fn } from "https://deno.land/x/ddc_vim@v3.7.2/deps.ts";
+import { fn } from "https://deno.land/x/ddc_vim@v3.7.2/deps.ts";
 
 type UserData = {
   vsnip: {
@@ -40,8 +40,10 @@ export class Source extends BaseSource<Params> {
   }: OnCompleteDoneArguments<Params, UserData>): Promise<void> {
     // Not expanded if confirmed with additional input.
     const itemWord = await denops.eval(`v:completed_item.word`) as string;
-    const ctx = await LineContext.create(denops);
-    if (!ctx.text.endsWith(itemWord, ctx.character)) {
+    const beforeLine = await denops.eval(
+      `getline('.')[:col('.')-2]`,
+    ) as string;
+    if (!beforeLine.endsWith(itemWord)) {
       return;
     }
 
@@ -52,30 +54,5 @@ export class Source extends BaseSource<Params> {
     return {
       menu: true,
     };
-  }
-}
-
-class LineContext {
-  // utf-16 offset
-  character: number;
-  text: string;
-
-  constructor(
-    character: number,
-    text: string,
-  ) {
-    this.character = character;
-    this.text = text;
-  }
-
-  static async create(
-    denops: Denops,
-  ) {
-    const beforeLine = await denops.eval(
-      `getline('.')[:col('.')-2]`,
-    ) as string;
-    const character = beforeLine.length;
-    const text = await fn.getline(denops, ".");
-    return new LineContext(character, text);
   }
 }
