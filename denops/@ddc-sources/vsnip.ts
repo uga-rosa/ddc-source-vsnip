@@ -48,6 +48,8 @@ export class Source extends BaseSource<Params> {
     }
 
     await denops.call("vsnip#expand");
+
+    await denops.call("ddc#skip_next_complete");
   }
 
   params(): Params {
