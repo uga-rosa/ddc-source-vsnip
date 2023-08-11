@@ -2,12 +2,14 @@ import {
   BaseSource,
   DdcGatherItems,
   Item,
-} from "https://deno.land/x/ddc_vim@v3.7.2/types.ts";
+  Previewer,
+} from "https://deno.land/x/ddc_vim@v4.0.2/types.ts";
 import {
   GatherArguments,
+  GetPreviewerArguments,
   OnCompleteDoneArguments,
-} from "https://deno.land/x/ddc_vim@v3.7.2/base/source.ts";
-import { fn } from "https://deno.land/x/ddc_vim@v3.7.2/deps.ts";
+} from "https://deno.land/x/ddc_vim@v4.0.2/base/source.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddc_vim@v4.0.2/deps.ts";
 
 type UserData = {
   vsnip: {
@@ -50,6 +52,29 @@ export class Source extends BaseSource<Params> {
     await denops.call("vsnip#expand");
 
     await denops.call("ddc#skip_next_complete");
+  }
+
+  async getPreviewer({
+    denops,
+    item,
+  }: GetPreviewerArguments<Params, UserData>): Promise<Previewer> {
+    const userData = item.user_data;
+    if (userData === undefined) {
+      return { kind: "empty" };
+    }
+    const contents = await this.snippetToString(denops, userData.vsnip.snippet)
+      .then((body) => body.replaceAll(/\r\n?/g, "\n").split("\n"));
+    const filetype = await op.filetype.get(denops);
+    contents.unshift("```" + filetype);
+    contents.push("```");
+    return { kind: "markdown", contents };
+  }
+
+  async snippetToString(
+    denops: Denops,
+    text: string | string[],
+  ): Promise<string> {
+    return await denops.call("vsnip#to_string", text) as string;
   }
 
   params(): Params {
